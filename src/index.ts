@@ -31,6 +31,7 @@ async function registerCommands() {
     new SlashCommandBuilder()
       .setName('daily-item')
       .setDescription('Créer un défi de craft Minecraft')
+      .setDMPermission(true)
       .addStringOption(option =>
         option.setName('tofind').setDescription('Item à trouver (ex: Epée en diamant)').setRequired(true)
       )
