@@ -15,7 +15,7 @@ const client = new Client({
 
 const TOKEN = process.env.DISCORD_TOKEN!;
 const CLIENT_ID = process.env.CLIENT_ID!;
-const API_URL = 'api-adress';
+const API_URL = 'http://37.59.126.77:3001';
 
 // Stockage de la réponse en cours par channel
 const activeGames = new Map<string, { answer: string; imageUrl: string }>();
