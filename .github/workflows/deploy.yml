@@ -32,7 +32,7 @@ jobs:
       - name: Deploy to VPS
         run: |
           ssh -p ${{ secrets.VPS_PORT }} ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} "
-            cd /home/${{ secrets.VPS_USER }}/projects/discordbot &&
+            cd /home/${{ secrets.VPS_USER }}/projects/Craft-bot &&
             git pull &&
             docker stop craft 2>/dev/null || true &&
             docker rm craft 2>/dev/null || true &&
@@ -40,6 +40,4 @@ jobs:
             docker run -d \
               --name craft \
               --restart unless-stopped \
-              --network shared-network \
-              craft
           "
