@@ -16,7 +16,7 @@ A modern Discord bot for a game to find the craft of an item
 ## Installation
 Clone this repository and install dependencies:
 ```bash
-git clone https://github.com/Under-scape/discordbot-ts-template
+git clone https://github.com/New-Teams/Craft-bot/
 cd discordbot-ts-template
 npm install
 ```
