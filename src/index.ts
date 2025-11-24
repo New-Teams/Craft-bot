@@ -2,7 +2,6 @@ import { Client, GatewayIntentBits, EmbedBuilder, SlashCommandBuilder, REST, Rou
 import axios from 'axios';
 import dotenv from 'dotenv';
 
-// Load dotenv
 dotenv.config();
 
 const client = new Client({
@@ -17,10 +16,8 @@ const TOKEN = process.env.DISCORD_TOKEN!;
 const CLIENT_ID = process.env.CLIENT_ID!;
 const API_URL = 'http://37.59.126.77:3001';
 
-// Stockage de la réponse en cours par channel
 const activeGames = new Map<string, { answer: string; imageUrl: string }>();
 
-// Normaliser les chaînes (sans accents, minuscules, espaces trimés)
 function normalize(str: string): string {
   return str
     .toLowerCase()
@@ -29,7 +26,6 @@ function normalize(str: string): string {
     .trim();
 }
 
-// Register commands
 async function registerCommands() {
   const commands = [
     new SlashCommandBuilder()
@@ -84,7 +80,6 @@ client.once('ready', () => {
   registerCommands();
 });
 
-// Manager of /daily-item
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
@@ -92,7 +87,6 @@ client.on('interactionCreate', async interaction => {
     await interaction.deferReply({ ephemeral: true });
 
     try {
-      // Récupérer les slots
       const slots = [];
       for (let i = 1; i <= 9; i++) {
         const value = interaction.options.getString(`slot${i}`);
@@ -105,24 +99,20 @@ client.on('interactionCreate', async interaction => {
 
       const toFind = interaction.options.getString('tofind', true);
 
-      // Image generated from api (thedrewdewen tkt j'ai pas fork nest cette fois)
       const response = await axios.post(`${API_URL}/generate`, {
         items: slots,
       });
 
       const imageUrl = `${API_URL}${response.data.url}`;
 
-      // Confirmation éphémère à l'admin
       await interaction.editReply({
         content: '✅ API OK ! Envoi de l\'image dans le channel...',
       });
 
-      // Download image
       const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
       const imageBuffer = Buffer.from(imageResponse.data);
       const attachment = new AttachmentBuilder(imageBuffer, { name: 'craft.png' });
 
-      // Embed
       const embed = new EmbedBuilder()
         .setTitle('🎮 Défi Craft Minecraft')
         .setDescription('**Trouvez l\'item crafté !**\n\nSoyez le premier à donner la bonne réponse dans le chat !')
@@ -131,16 +121,16 @@ client.on('interactionCreate', async interaction => {
         .setFooter({ text: 'Bonne chance !' })
         .setTimestamp();
 
-      // Send embed
       if (interaction.channel && 'send' in interaction.channel) {
         await interaction.channel.send({
           embeds: [embed],
           files: [attachment],
         });
-      activeGames.set(interaction.channelId, {
-        answer: normalize(toFind),
-        imageUrl: imageUrl,
-      });
+        activeGames.set(interaction.channelId, {
+          answer: normalize(toFind),
+          imageUrl: imageUrl,
+        });
+      } // ← CORRECTION: Cette accolade fermante était manquante
 
     } catch (error) {
       console.error('Erreur:', error);
@@ -151,7 +141,6 @@ client.on('interactionCreate', async interaction => {
   }
 });
 
-// Gestion des messages (pour les réponses)
 client.on('messageCreate', async message => {
   if (message.author.bot) return;
 
@@ -161,7 +150,6 @@ client.on('messageCreate', async message => {
   const userAnswer = normalize(message.content);
 
   if (userAnswer === game.answer) {
-    // Bonne réponse !
     const embed = new EmbedBuilder()
       .setTitle('🎉 Félicitations !')
       .setDescription(`**${message.author}** a trouvé la bonne réponse !\n\n✨ **Réponse:** ${message.content}`)
@@ -172,7 +160,6 @@ client.on('messageCreate', async message => {
 
     await message.reply({ embeds: [embed] });
 
-    // Supprimer le jeu actif
     activeGames.delete(message.channelId);
   }
 });
