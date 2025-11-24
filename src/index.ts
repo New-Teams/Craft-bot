@@ -1,9 +1,8 @@
-// src/index.ts
 import { Client, GatewayIntentBits, EmbedBuilder, SlashCommandBuilder, REST, Routes, AttachmentBuilder } from 'discord.js';
 import axios from 'axios';
 import dotenv from 'dotenv';
 
-// Charger les variables d'environnement
+// Load dotenv
 dotenv.config();
 
 const client = new Client({
@@ -16,7 +15,7 @@ const client = new Client({
 
 const TOKEN = process.env.DISCORD_TOKEN!;
 const CLIENT_ID = process.env.CLIENT_ID!;
-const API_URL = 'http://37.59.126.77:3001';
+const API_URL = 'api-adress';
 
 // Stockage de la réponse en cours par channel
 const activeGames = new Map<string, { answer: string; imageUrl: string }>();
@@ -30,7 +29,7 @@ function normalize(str: string): string {
     .trim();
 }
 
-// Enregistrer les commandes slash
+// Register commands
 async function registerCommands() {
   const commands = [
     new SlashCommandBuilder()
@@ -72,25 +71,24 @@ async function registerCommands() {
   const rest = new REST({ version: '10' }).setToken(TOKEN);
 
   try {
-    console.log('🔄 Enregistrement des commandes slash...');
+    console.log('Registration...');
     await rest.put(Routes.applicationCommands(CLIENT_ID), { body: commands });
-    console.log('✅ Commandes enregistrées avec succès !');
+    console.log('Commands OK !');
   } catch (error) {
-    console.error('❌ Erreur lors de l\'enregistrement des commandes:', error);
+    console.error('Commands registration failed : ', error);
   }
 }
 
 client.once('ready', () => {
-  console.log(`🤖 Bot connecté en tant que ${client.user?.tag}`);
+  console.log(`Connected inasmuch as ${client.user?.tag}`);
   registerCommands();
 });
 
-// Gestion de la commande /daily-item
+// Manager of /daily-item
 client.on('interactionCreate', async interaction => {
   if (!interaction.isChatInputCommand()) return;
 
   if (interaction.commandName === 'daily-item') {
-    // Réponse éphémère (seulement visible par l'admin)
     await interaction.deferReply({ ephemeral: true });
 
     try {
@@ -107,7 +105,7 @@ client.on('interactionCreate', async interaction => {
 
       const toFind = interaction.options.getString('tofind', true);
 
-      // Appel API pour générer l'image
+      // Image generated from api (thedrewdewen tkt j'ai pas fork nest cette fois)
       const response = await axios.post(`${API_URL}/generate`, {
         items: slots,
       });
@@ -119,12 +117,12 @@ client.on('interactionCreate', async interaction => {
         content: '✅ API OK ! Envoi de l\'image dans le channel...',
       });
 
-      // Télécharger l'image
+      // Download image
       const imageResponse = await axios.get(imageUrl, { responseType: 'arraybuffer' });
       const imageBuffer = Buffer.from(imageResponse.data);
       const attachment = new AttachmentBuilder(imageBuffer, { name: 'craft.png' });
 
-      // Créer l'embed
+      // Embed
       const embed = new EmbedBuilder()
         .setTitle('🎮 Défi Craft Minecraft')
         .setDescription('**Trouvez l\'item crafté !**\n\nSoyez le premier à donner la bonne réponse dans le chat !')
@@ -133,15 +131,12 @@ client.on('interactionCreate', async interaction => {
         .setFooter({ text: 'Bonne chance !' })
         .setTimestamp();
 
-      // Envoyer publiquement dans le channel
+      // Send embed
       if (interaction.channel && 'send' in interaction.channel) {
         await interaction.channel.send({
           embeds: [embed],
           files: [attachment],
         });
-      }
-
-      // Stocker la réponse pour ce channel
       activeGames.set(interaction.channelId, {
         answer: normalize(toFind),
         imageUrl: imageUrl,
