@@ -1,5 +1,5 @@
-# Discord Bot with TypeScript
-A modern Discord bot template built with TypeScript for scalable and maintainable bot development.
+# Craft Finder bot in typescript
+A modern Discord bot for a game to find the craft of an item
 
 ## Features
 - 🤖 Discord.js v14 framework
