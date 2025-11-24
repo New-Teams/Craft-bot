@@ -40,7 +40,5 @@ jobs:
             docker run -d \
               --name craft \
               --restart unless-stopped \
-              -e DISCORD_TOKEN='${{ secrets.DISCORD_TOKEN }}' \
-              -e CLIENT_ID='${{ secrets.CLIENT_ID }}' \
               craft
           "
