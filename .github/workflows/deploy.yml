@@ -40,4 +40,5 @@ jobs:
             docker run -d \
               --name craft \
               --restart unless-stopped \
+              craft
           "
