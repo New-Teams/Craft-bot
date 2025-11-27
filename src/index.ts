@@ -18,7 +18,7 @@ const client = new Client({
 
 const TOKEN = process.env.DISCORD_TOKEN!;
 const CLIENT_ID = process.env.CLIENT_ID!;
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY!;
+const GROQ_API_KEY = process.env.GROQ_API_KEY!;
 const API_URL = 'http://37.59.126.77:3001';
 
 // Charger les presets
@@ -55,7 +55,7 @@ function normalize(str: string): string {
     .trim();
 }
 
-// Générer un craft avec Gemini
+// Générer un craft avec Groq
 async function generateCraftWithGemini(): Promise<{ slots: (string | null)[], answer: string } | null> {
   try {
     const availableItems = Object.keys(presets).join(', ');
@@ -73,7 +73,7 @@ RÈGLES STRICTES:
 - Le craft DOIT être un vrai craft de Minecraft (pas inventé)
 - Choisis des crafts variés: outils, armes, blocs, nourriture, redstone, etc.
 
-Réponds UNIQUEMENT avec ce format JSON (sans markdown):
+Réponds UNIQUEMENT avec ce format JSON (sans markdown, sans backticks):
 {
   "slot1": "nom_item ou null",
   "slot2": "nom_item ou null",
@@ -102,20 +102,32 @@ Exemple pour une épée en diamant:
 }`;
 
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${GEMINI_API_KEY}`,
+      'https://api.groq.com/openai/v1/chat/completions',
       {
-        contents: [{
-          parts: [{ text: prompt }]
-        }]
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        temperature: 0.7,
+        max_tokens: 500
+      },
+      {
+        headers: {
+          'Authorization': `Bearer ${GROQ_API_KEY}`,
+          'Content-Type': 'application/json'
+        }
       }
     );
 
-    const text = response.data.candidates[0].content.parts[0].text;
+    const text = response.data.choices[0].message.content;
     
     // Extraire le JSON (enlever les backticks markdown si présents)
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     if (!jsonMatch) {
-      console.error('❌ Gemini n\'a pas retourné de JSON valide');
+      console.error('❌ Groq n\'a pas retourné de JSON valide');
       return null;
     }
 
@@ -139,7 +151,7 @@ Exemple pour une épée en diamant:
     };
 
   } catch (error) {
-    console.error('❌ Erreur Gemini:', error);
+    console.error('❌ Erreur Groq:', error);
     return null;
   }
 }
@@ -228,7 +240,7 @@ async function generateChallenge(
       .setDescription('**Trouvez l\'item crafté !**\n\nSoyez le premier à donner la bonne réponse dans le chat !')
       .setImage('attachment://craft.png')
       .setColor(isAuto ? 0xe74c3c : 0x2ecc71)
-      .setFooter({ text: isAuto ? 'Généré par Gemini AI' : 'Bonne chance !' })
+      .setFooter({ text: isAuto ? 'Généré par Groq AI' : 'Bonne chance !' })
       .setTimestamp();
 
     // Envoyer publiquement
@@ -285,7 +297,7 @@ client.on('messageCreate', async (message: Message) => {
       return;
     }
 
-    await message.reply('🤖 Génération d\'un craft automatique avec Gemini...');
+    await message.reply('🤖 Génération d\'un craft automatique avec Groq AI...');
 
     // Générer un craft avec Gemini
     const craftData = await generateCraftWithGemini();
