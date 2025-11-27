@@ -1,5 +1,5 @@
 # Craft Finder bot in typescript
-A modern Discord bot for a game to find the craft of an Minecraft item.
+A modern Discord bot for a game to find the craft of an Minecraft item boosted by IA.
 
 ## Features
 - 🤖 Discord.js v14 framework
